@@ -19,7 +19,7 @@ import static mindustry.Vars.tilesize;
 
 public class LaserEnergizer extends Block {
     public TextureRegion baseRegion;
-    public  float laserScale;
+    public  float laserScale = 0.5f;
     public TextureRegion laser;
     public TextureRegion laserEnd;
     public float laserRange;
@@ -88,7 +88,6 @@ public class LaserEnergizer extends Block {
 
         @Override
         public boolean onConfigureBuildTapped(Building other){
-            //TODO config
             if (other == null) {return true;}
             /* double tab*/
             if (other == this) {removeTarget();deselect();}
@@ -114,13 +113,12 @@ public class LaserEnergizer extends Block {
                         vx = Mathf.cosDeg(angle1), vy = Mathf.sinDeg(angle1),
                         len1 = size * tilesize / 2f - 1.5f, len2 = target.block.size * tilesize / 2f - 1.5f;
 
-                Drawf.laser(laser, laserEnd, x * tilesize, y * tilesize, target.x - vx * len2, target.y - vy * len2, laserScale);
+                Drawf.laser(laser, laserEnd, x + vx * len1, y + vx * len1, target.x - vx * len2, target.y - vy * len2, laserScale);
             }
-            //TODO DRAW
+            //TODO DRAW lasers
         }
         @Override
         public void drawConfigure(){
-            //TODO Draw config
             Drawf.circles(x, y, tile.block().size * tilesize / 2f + 1f + Mathf.absin(Time.time, 4f, 1f));
             if (target!=null) {
                 Drawf.square(target.x, target.y, target.block.size * tilesize / 2f + 1f, Time.time, Pal.place);
