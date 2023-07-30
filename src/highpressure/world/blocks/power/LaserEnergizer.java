@@ -13,11 +13,13 @@ import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
 import mindustry.world.Block;
+import mindustry.world.blocks.power.PowerGraph;
 import mindustry.world.meta.Env;
 
 import static mindustry.Vars.tilesize;
 
 public class LaserEnergizer extends Block {
+
     public TextureRegion baseRegion;
     public  float laserScale = 0.5f;
     public TextureRegion laser;
@@ -25,6 +27,7 @@ public class LaserEnergizer extends Block {
     public float laserRange;
     public float powerUse;
     public Color laserColor1 = Color.white;
+    public float length = 6f;
     public Color laserColor2 = Pal.powerLight;
     public LaserEnergizer(String name) {
         super(name);
@@ -32,6 +35,8 @@ public class LaserEnergizer extends Block {
         update = true;
         hasPower = true;
         envEnabled |= Env.space;
+        solid = true;
+        outlineIcon = true;
     }
 
     @Override
@@ -43,17 +48,18 @@ public class LaserEnergizer extends Block {
 
     public class LaserEnergizerBuild extends Building{
         protected Building target;
-        public float rotation = 0;
+        public float rotation = 90;
         public float strength = 90;
         private boolean powering = false;
         @Override
         public void updateTile(){
+            super.updateTile();
             if(target!=null){if (!target.isValid()){removeTarget();}}
             if (efficiency > 0 && target != null){
                 float angle = Angles.angle(x,y,target.x,target.y);
 
                 if (Angles.angleDist(angle,rotation) < 20 && !powering){
-                    power.links.add(target.pos());
+                    power.graph.add(target);
                     powering=true;
                 }
                 rotation = Mathf.slerpDelta(rotation,angle,0.1f * efficiency * timeScale);
@@ -74,10 +80,9 @@ public class LaserEnergizer extends Block {
         }
 
         public void disconnect(){
-            if (target!=null){if (target.power!=null) {
-                target.power.links.removeValue(pos());
-                power.links.removeValue(target.pos());
-            }}
+            if (target!=null){
+                power.graph.remove(target);
+            }
             powering=false;
         }
 
@@ -109,11 +114,10 @@ public class LaserEnergizer extends Block {
                 Draw.z(Layer.power);
                 Draw.color(laserColor1, laserColor2, (1f - power.graph.getSatisfaction()) * 0.86f + Mathf.absin(3f, 0.1f));
                 Draw.alpha(Renderer.laserOpacity);
-                float angle1 = Angles.angle(x, y, target.x, target.y),
-                        vx = Mathf.cosDeg(angle1), vy = Mathf.sinDeg(angle1),
-                        len1 = size * tilesize / 2f - 1.5f, len2 = target.block.size * tilesize / 2f - 1.5f;
+                float vx=x+Angles.trnsx(rotation,length),
+                        vy=y+Angles.trnsy(rotation,length);
 
-                Drawf.laser(laser, laserEnd, x + vx * len1, y + vx * len1, target.x - vx * len2, target.y - vy * len2, laserScale);
+                Drawf.laser(laser, laserEnd, vx, vy, target.x, target.y, laserScale);
             }
             //TODO DRAW lasers
         }

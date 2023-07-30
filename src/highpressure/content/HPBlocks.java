@@ -25,7 +25,7 @@ public class HPBlocks {
         }};
         hardiceFloor = new Floor("hard-ice"){{
             variants = 8;
-            dragMultiplier = 0.01f;
+            dragMultiplier = 0.1f;
             albedo = 0.3f;
             speedMultiplier = 0.8f;
             attributes.set(Attribute.water,-0.4f);
@@ -36,6 +36,7 @@ public class HPBlocks {
         laserenergizer = new LaserEnergizer("laser-energizer"){{
             requirements(Category.power,with(Items.surgeAlloy,90));
             size = 2;
+            powerUse = 1.5f;
         }};
     }
 }
