@@ -27,8 +27,10 @@ public class LaserEnergizer extends Block {
     public float laserRange;
     public float powerUse;
     public Color laserColor1 = Color.white;
-    public float length = 6f;
+    public float length = 5f;
     public Color laserColor2 = Pal.powerLight;
+
+    public TextureRegion[] icons(){return new TextureRegion[]{baseRegion,region};}
     public LaserEnergizer(String name) {
         super(name);
         configurable = true;
@@ -59,12 +61,14 @@ public class LaserEnergizer extends Block {
                 float angle = Angles.angle(x,y,target.x,target.y);
 
                 if (Angles.angleDist(angle,rotation) < 20 && !powering){
-                    power.graph.add(target);
+                    power.links.add(target.pos());
+                    if (target.block.hasPower) {
+                        target.power.links.add(this.pos());
+                    }
                     powering=true;
                 }
+                updatePowerGraph();
                 rotation = Mathf.slerpDelta(rotation,angle,0.1f * efficiency * timeScale);
-                //TODO LASERS!!!!!!!!!
-
             }
             else if (powering && target!=null) {
                 disconnect();
@@ -81,7 +85,14 @@ public class LaserEnergizer extends Block {
 
         public void disconnect(){
             if (target!=null){
-                power.graph.remove(target);
+                power.links.removeValue(target.pos());
+                if (target.block.hasPower) {
+                    target.power.links.removeValue(this.pos());
+                }
+                PowerGraph og = new PowerGraph();
+                og.reflow(this);
+                PowerGraph newpower = new PowerGraph();
+                newpower.reflow(this);
             }
             powering=false;
         }
@@ -117,9 +128,8 @@ public class LaserEnergizer extends Block {
                 float vx=x+Angles.trnsx(rotation,length),
                         vy=y+Angles.trnsy(rotation,length);
 
-                Drawf.laser(laser, laserEnd, vx, vy, target.x, target.y, laserScale);
+                Drawf.laser(laser, laserEnd, vx, vy, target.x, target.y, laserScale*strength);
             }
-            //TODO DRAW lasers
         }
         @Override
         public void drawConfigure(){
