@@ -6,6 +6,7 @@ import mindustry.game.EventType.*;
 import mindustry.mod.*;
 import mindustry.ui.dialogs.*;
 import highpressure.content.HPBlocks;
+import highpressure.content.HPSolarSystem;
 
 public class HighPressureMod extends Mod{
 
@@ -28,6 +29,7 @@ public class HighPressureMod extends Mod{
 
     @Override
     public void loadContent(){
+        HPSolarSystem.load();
         HPBlocks.load();
         Log.info("Loading some example content.");
     }
