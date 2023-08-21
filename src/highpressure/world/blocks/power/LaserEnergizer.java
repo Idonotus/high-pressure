@@ -8,6 +8,7 @@ import arc.graphics.g2d.TextureRegion;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.struct.FloatSeq;
+import arc.util.Log;
 import arc.util.Time;
 import mindustry.core.Renderer;
 import mindustry.gen.Building;
@@ -50,28 +51,7 @@ public class LaserEnergizer extends Block {
         consumePowerCond(powerUse,(LaserEnergizerBuild entity) -> entity.target!=null);
     }
 
-    public void drawWaveSeg(float radius, float posx, float posy, float angle, float rotation , float width, int points){
-        //TODO THIS
-        FloatSeq poly = new FloatSeq();
-        //float angleto = Angles.angle(viewpointx,viewpointy,posx,posy);
 
-        for (int i=0; i<=points/2; i++) {
-            float a = (float) (i / points)*angle-angle/2+rotation;
-            float x1 = Angles.trnsx(a, radius+width/2);
-            float y1 = Angles.trnsy(a, radius+width/2);
-            poly.add(posx+x1,posy+y1);
-        }
-        for (int i=0; i<=points/2; i++) {
-            float a = (float) (i / points)*angle-angle/2+rotation;
-            float x1 = Angles.trnsx(a, radius-width/2);
-            float y1 = Angles.trnsy(a, radius-width/2);
-            poly.add(posx+x1,posy+y1);
-        }
-        float x1 = Angles.trnsx(-angle/2+rotation, radius+width/2);
-        float y1 = Angles.trnsy(-angle/2+rotation, radius+width/2);
-        poly.add(posx+x1,posy+y1);
-        Fill.poly(poly.items,poly.size);
-    }
 
 
     public class LaserEnergizerBuild extends Building{
@@ -118,7 +98,7 @@ public class LaserEnergizer extends Block {
                 PowerGraph og = new PowerGraph();
                 og.reflow(this);
                 PowerGraph newpower = new PowerGraph();
-                newpower.reflow(this);
+                newpower.reflow(target);
             }
             powering=false;
         }
@@ -141,9 +121,11 @@ public class LaserEnergizer extends Block {
             return false;
         }
 
+
         @Override
         public void draw(){
-            drawWaveSeg(5,x,y,45f,rotation,2,50);
+            Fill.circle(x,y,10);
+
             Draw.rect(baseRegion,x,y);
             Draw.z(Layer.turret);
             Drawf.shadow(region, x - (size / 2f), y - (size / 2f), rotation - 90);
