@@ -1,25 +1,29 @@
 package highpressure.entities.bullet;
 
+import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.math.Angles;
+import arc.math.geom.*;
 import arc.struct.FloatSeq;
 import arc.struct.Seq;
+import arc.util.Log;
 import arc.util.Nullable;
 import mindustry.content.Fx;
 import mindustry.entities.bullet.BulletType;
-import mindustry.gen.Bullet;
-import mindustry.gen.Groups;
+import mindustry.gen.*;
 import mindustry.type.Liquid;
 
 public class WaveBulletType extends BulletType {
-    public float width = 5f;
+    public float width;
     public Liquid liquid;
     public float arcAngle;
     //Not recommended over 180 deg arcAngle
     public float arcMaxRange;
-    public @Nullable BulletType splashBullet;
+    public float damageMu;
+    public @Nullable BulletType reflectBullet = null;
 
     public WaveBulletType(@Nullable Liquid liquid){
+        super(0.5f, 0);
         if(liquid != null) {
             this.liquid = liquid;
             this.status = liquid.effect;
@@ -27,6 +31,8 @@ public class WaveBulletType extends BulletType {
             lightColor = liquid.lightColor;
             lightOpacity = liquid.lightColor.a;
         }
+        width = 20f;
+        collides = false;
         arcMaxRange = -1f;
         arcAngle = 45f;
         ammoMultiplier = 1f;
@@ -40,11 +46,12 @@ public class WaveBulletType extends BulletType {
         knockback = 0.55f;
         displayAmmoMultiplier = false;
         fragBullets=1;
+        damage=100;
+        impact=true;
     }
 
     @Override
     public void init() {
-        fragBullet = splashBullet;
         super.init();
     }
 
@@ -55,46 +62,108 @@ public class WaveBulletType extends BulletType {
     }
     public void drawWaveSeg(float radius, float posx, float posy, float angle, float rotation , float width, int points){
         FloatSeq poly = new FloatSeq();
-        for (int i=0; i<=points/2; i++) {
-            float a = ((float)i / (float)points)*angle*2-angle/2+rotation;
+        for (int i=0; i<=points; i++) {
+            float a = ((float)i / (float)points)*angle-angle/2+rotation;
             float x1 = Angles.trnsx(a, radius+width/2);
             float y1 = Angles.trnsy(a, radius+width/2);
             poly.add(posx+x1,posy+y1);
         }
-        for (int i=points/2; i>=0; i--) {
-            float a =  ((float)i / (float)points)*angle*2-angle/2+rotation;
-            float x1 = Angles.trnsx(a, radius-width/2);
-            float y1 = Angles.trnsy(a, radius-width/2);
-            poly.add(posx+x1,posy+y1);
-        }
+        float x1, y1;
+        x1 = Angles.trnsx(rotation+angle/2, radius-width/2);
+        y1 = Angles.trnsy(rotation+angle/2, radius-width/2);
+        poly.add(posx+x1,posy+y1);
+        x1 = Angles.trnsx(rotation-angle/2, radius-width/2);
+        y1 = Angles.trnsy(rotation-angle/2, radius-width/2);
+        poly.add(posx+x1,posy+y1);
+        x1 = Angles.trnsx(rotation-angle/2, radius+width/2);
+        y1 = Angles.trnsy(rotation-angle/2, radius+width/2);
+        poly.add(posx+x1,posy+y1);
         Fill.poly(poly.items,poly.size);
     }
 
     @Override
     public void update(Bullet b){
+        if (b.damage<=0){Log.info(b.damage);}
         super.update(b);
-        float ox, oy;
-        float range = (float) Math.sqrt(Math.pow(b.originX,2)+Math.pow(b.originY,2));
-        if ( range > arcMaxRange && arcMaxRange > 0) {
-            ox = b.x-Angles.trnsx(b.rotation()-180, b.originX);
-            oy = b.y-Angles.trnsy(b.rotation()-180, b.originX);
-            range = arcMaxRange;}
-        else {ox = b.originX; oy = b.originY;}
-        float maxCollideRange = range + width/2;
-        Seq<Bullet> bcollide = new Seq<>();
-        Groups.bullet.intersect(ox,oy, maxCollideRange, maxCollideRange, bullet -> {
-            if(bullet.team == b.team){return;}
-            if (!bullet.type.hittable){return;}
-            //TODO: ACTUAL COLLISION Check
-            bcollide.add(bullet);
-        });
-        //TODO;
-        // Block collision
-        // Fire collision
-        // collision handling
+
+        float lastpivx, pivx; lastpivx = pivx = b.originX;
+        float lastpivy, pivy; lastpivy = pivy = b.originY;
+        float lastrange = new Vec2(b.lastX-b.originX,b.lastY-b.originY).len();
+        float range = new Vec2(b.x-b.originX,b.y-b.originY).len();
+        if (arcMaxRange > 0) {
+            if (lastrange > arcMaxRange) {
+                lastpivx = b.lastX - Angles.trnsx(b.rotation() - 180, arcMaxRange);
+                lastpivy = b.lastY - Angles.trnsy(b.rotation() - 180, arcMaxRange);
+            }
+            if (range > arcMaxRange) {
+                pivx = b.lastX - Angles.trnsx(b.rotation() - 180, arcMaxRange);
+                pivy = b.lastY - Angles.trnsy(b.rotation() - 180, arcMaxRange);
+            }
+
+            range = Math.min(range, arcMaxRange) ;
+            lastrange = Math.min(lastrange, arcMaxRange);
+        }
+        range += width / 2; lastrange -= width / 2;
+        FloatSeq hitpoly = new FloatSeq();
+        hitpoly.add(pivx+Angles.trnsx(b.rotation(),range),
+                pivy+Angles.trnsy(b.rotation(),range));
+        hitpoly.add(pivx+Angles.trnsx(b.rotation()+arcAngle/2,range),
+                pivy+Angles.trnsy(b.rotation()+arcAngle/2,range));
+        hitpoly.add(lastpivx+Angles.trnsx(b.rotation()+arcAngle/2,lastrange),
+                lastpivy+Angles.trnsy(b.rotation()+arcAngle/2,lastrange));
+        hitpoly.add(lastpivx+Angles.trnsx(b.rotation()-arcAngle/2,lastrange),
+                lastpivy+Angles.trnsy(b.rotation()-arcAngle/2,lastrange));
+        hitpoly.add(pivx+Angles.trnsx(b.rotation()-arcAngle/2,range),
+                pivy+Angles.trnsy(b.rotation()-arcAngle/2,range));
+        Polygon hitbox = new Polygon(hitpoly.toArray());
+        Rect maxCollideRect = hitbox.getBoundingRectangle();
+        //Seq<Bullet> bulletcollide = new Seq<>();
+        //Seq<Building> buildcollide = new Seq<>();
+        Seq<Unit> unitcollide = new Seq<>();
+        //Groups.bullet.intersect(maxCollideRect.x,maxCollideRect.y,
+        //        maxCollideRect.width, maxCollideRect.height, bullet -> {
+        //    if (!bullet.type.hittable) {return;}
+        //    Rect bhitrect = new Rect();
+        //    FloatSeq bhitbox = new FloatSeq();
+        //    bullet.hitbox(bhitrect);
+        //    bhitbox.add(bhitrect.x,bhitrect.y);bhitbox.add(bhitrect.x+bhitrect.width,bhitrect.y);
+        //    bhitbox.add(bhitrect.x+bhitrect.width,bhitrect.y+bhitrect.height);bhitbox.add(bhitrect.x,bhitrect.y+bhitrect.height);
+        //    if (!Intersector.intersectPolygons(hitbox,new Polygon(bhitbox.toArray()),null)) {return;}
+        //    bulletcollide.add(bullet);
+        //});
+        //Groups.build.intersect(maxCollideRect.x,maxCollideRect.y,
+        //        maxCollideRect.width, maxCollideRect.height, building -> {
+        //            Rect bhitrect = new Rect();
+        //            FloatSeq bhitbox = new FloatSeq();
+        //            building.hitbox(bhitrect);
+        //            bhitbox.add(bhitrect.x,bhitrect.y);bhitbox.add(bhitrect.x+bhitrect.width,bhitrect.y);
+        //            bhitbox.add(bhitrect.x+bhitrect.width,bhitrect.y+bhitrect.height);bhitbox.add(bhitrect.x,bhitrect.y+bhitrect.height);
+        //            if (!Intersector.intersectPolygons(hitbox,new Polygon(bhitbox.toArray()),null)) {return;}
+        //            buildcollide.add(building);
+        //        });
+        Groups.unit.intersect(maxCollideRect.x,maxCollideRect.y,
+                maxCollideRect.width, maxCollideRect.height, unit -> {
+                    if (unit.team == b.team) {return;}
+                    if (!unit.hittable()) {return;}
+                    Rect bhitrect = new Rect();
+                    FloatSeq bhitbox = new FloatSeq();
+                    unit.hitbox(bhitrect);
+                    bhitbox.add(bhitrect.x,bhitrect.y);bhitbox.add(bhitrect.x+bhitrect.width,bhitrect.y);
+                    bhitbox.add(bhitrect.x+bhitrect.width,bhitrect.y+bhitrect.height);bhitbox.add(bhitrect.x,bhitrect.y+bhitrect.height);
+                    //TODO: This
+                    // but srs idk how to fix do better NOW
+                    if (!Intersector.overlapConvexPolygons(hitpoly.toArray(),bhitbox.toArray(),null)) {return;}
+                    unitcollide.add(unit);
+                });;
+        //TODO; Tile collision
+
+        for (Unit unit:unitcollide){
+            //TODO: Fix infinte kb
+            hitEntity(b,unit, unit.health());
+        }
 
         if(liquid.canExtinguish()){
-            //Fire
+            //TODO: Fire collision
         }
     }
 
@@ -107,17 +176,21 @@ public class WaveBulletType extends BulletType {
             hitEffect.at(b.x, b.y, b.rotation(), liquid.color);
         }
     }
-    private boolean collidePoint(float ox,float oy, float radius,float tx, float ty, float rotation){
-        float a = Angles.angle(ox,oy,tx,ty);
-        if (!Angles.near(a,rotation,arcAngle)) {return false;}
-        float dist = (float) Math.sqrt(Math.pow(tx-ox,2)+Math.pow(ty-oy,2));
-        if (dist>radius+width/2) {return false;}
-        if (radius-width/2>dist) {return false;}
-        return true;
-    }
     @Override
-    public void draw(Bullet b){
-
+    public void draw(Bullet b) {
+        float pivx; pivx = b.originX;
+        float pivy; pivy = b.originY;
+        float range = new Vec2(b.x-b.originX,b.y-b.originY).len();
+        if (arcMaxRange > 0) {
+            if (range > arcMaxRange) {
+                pivx = b.lastX - Angles.trnsx(b.rotation() - 180, arcMaxRange);
+                pivy = b.lastY - Angles.trnsy(b.rotation() - 180, arcMaxRange);
+            }
+            range = Math.min(range, arcMaxRange);
+        }
+        Draw.color(liquid.color);
+        drawWaveSeg(range,pivx,pivy,arcAngle,b.rotation(),width,50);
     }
+
 
 }

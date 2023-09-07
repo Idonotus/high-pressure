@@ -1,6 +1,7 @@
 package highpressure.content;
 
 import arc.struct.EnumSet;
+import highpressure.entities.bullet.WaveBulletType;
 import mindustry.content.*;
 import mindustry.entities.bullet.*;
 import mindustry.gen.Sounds;
@@ -60,46 +61,42 @@ public class HPBlocks {
         tide = new LiquidTurret("tide"){{
             requirements(Category.turret, with(Items.metaglass, 100, Items.lead, 400, Items.titanium, 250, Items.thorium, 100));
             ammo(
-                    Liquids.water, new LiquidBulletType(Liquids.water){{
-                        lifetime = 49f;
+                    Liquids.water, new WaveBulletType(Liquids.water){{
+                        lifetime = 100f;
                         speed = 4f;
                         knockback = 1.7f;
-                        puddleSize = 8f;
-                        orbSize = 4f;
                         drag = 0.001f;
                         ammoMultiplier = 1f;
                         statusDuration = 60f * 4f;
                         damage = 0.2f;
                         layer = Layer.bullet - 5f;
+                        pierceCap = 25;
                     }},
-                    Liquids.slag,  new LiquidBulletType(Liquids.slag){{
-                        lifetime = 49f;
+                    Liquids.slag,  new WaveBulletType(Liquids.slag){{
+                        lifetime = 100f;
                         speed = 4f;
                         knockback = 10.3f;
-                        puddleSize = 8f;
-                        orbSize = 4f;
+                        pierceCap = 25;
                         damage = 4.75f;
                         drag = 0.001f;
                         ammoMultiplier = 1f;
                         statusDuration = 60f * 4f;
                     }},
-                    Liquids.cryofluid, new LiquidBulletType(Liquids.cryofluid){{
-                        lifetime = 49f;
+                    Liquids.cryofluid, new WaveBulletType(Liquids.cryofluid){{
+                        lifetime = 100f;
                         speed = 4f;
                         knockback = 1.3f;
-                        puddleSize = 8f;
-                        orbSize = 4f;
+                        pierceCap = 25;
                         drag = 0.001f;
                         ammoMultiplier = 0.5f;
                         statusDuration = 60f * 4f;
                         damage = 0.2f;
                     }},
-                    Liquids.oil, new LiquidBulletType(Liquids.oil){{
-                        lifetime = 49f;
+                    Liquids.oil, new WaveBulletType(Liquids.oil){{
+                        lifetime = 100f;
                         speed = 4f;
                         knockback = 1.3f;
-                        puddleSize = 8f;
-                        orbSize = 4f;
+                        pierceCap = 25;
                         drag = 0.001f;
                         ammoMultiplier = 1f;
                         statusDuration = 60f * 4f;
@@ -111,9 +108,9 @@ public class HPBlocks {
             loopSound = Sounds.none;
             size = 2;
             reload = 120f;
-            shoot.shots = 56;
+            shoot.shots = 1;
             velocityRnd = 0.5f;
-            inaccuracy = 45f;
+            inaccuracy = 0f;
             recoil = 1.5f;
             shootCone = 45f;
             liquidCapacity = 500f;
