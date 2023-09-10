@@ -20,7 +20,12 @@ import highpressure.world.blocks.power.*;
 import static mindustry.type.ItemStack.*;
 
 public class HPBlocks {
-    public static Block siliconConveyor,hardiceFloor,hardiceWall,laserenergizer,crucible,tide;
+    public static Block
+            hardice,hardicewall,coolmoss,
+            siliconConveyor,
+            laserenergizer,
+            crucible,
+            tide;
 
     public static void load(){
         siliconConveyor = new Conveyor("silicon-conveyor"){{
@@ -30,14 +35,18 @@ public class HPBlocks {
             displayedSpeed = 8f;
             health = 60;
         }};
-        hardiceFloor = new Floor("hard-ice"){{
+        coolmoss = new Floor("cool-looking-moss"){{
+            speedMultiplier = 0.9f;
+            dragMultiplier = 1.1f;
+        }};
+        hardice = new Floor("hard-ice"){{
             variants = 8;
             dragMultiplier = 0.1f;
             albedo = 0.3f;
             speedMultiplier = 0.8f;
             attributes.set(Attribute.water,-0.4f);
         }};
-        hardiceWall = new StaticWall("hard-ice-wall"){{
+        hardicewall = new StaticWall("hard-ice-wall"){{
            variants = 4;
         }};
         laserenergizer = new LaserEnergizer("laser-energizer"){{
