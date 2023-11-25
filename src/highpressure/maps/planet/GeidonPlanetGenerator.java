@@ -18,12 +18,11 @@ public class GeidonPlanetGenerator extends PlanetGenerator {
     Block[][] terrain = {
             {Blocks.cryofluid,Blocks.cryofluid,HPBlocks.hardice,Blocks.ice,Blocks.ice,Blocks.snow},
             {HPBlocks.hardice,HPBlocks.hardice,HPBlocks.hardice,Blocks.ice,Blocks.snow,Blocks.iceSnow},
-            {Blocks.ice,Blocks.snow,Blocks.snow,Blocks.iceSnow,Blocks.iceSnow,Blocks.beryllicStone},
-            {Blocks.beryllicStone,Blocks.beryllicStone,Blocks.beryllicStone,Blocks.darksand,Blocks.darksand,HPBlocks.coolmoss},
-            {Blocks.beryllicStone,Blocks.beryllicStone,Blocks.beryllicStone,Blocks.darksand,Blocks.darksand,HPBlocks.coolmoss},
+            {Blocks.beryllicStone,Blocks.ice,Blocks.beryllicStone,Blocks.darksand,HPBlocks.coolmoss,HPBlocks.coolmoss},
+            {Blocks.beryllicStone,Blocks.water,Blocks.beryllicStone,Blocks.water,Blocks.darksand,HPBlocks.coolmoss},
+            {Blocks.beryllicStone,Blocks.water,Blocks.sand,Blocks.darksand,Blocks.darksand,HPBlocks.coolmoss},
             {Blocks.beryllicStone,Blocks.beryllicStone,Blocks.sand,Blocks.sand,Blocks.sand,Blocks.redStone},
             {Blocks.sand,Blocks.sand,Blocks.sand,Blocks.redStone,Blocks.basalt,Blocks.redStone,Blocks.sand,Blocks.redStone,Blocks.slag},
-            {Blocks.redStone,Blocks.redStone,Blocks.slag,Blocks.slag,Blocks.slag,Blocks.basalt}
     };
     Block getBlock(Vec3 position){
         Block[] arr = terrain[(int) Mathf.clamp(rawTemp(position)*(terrain.length),0,terrain.length-1)];

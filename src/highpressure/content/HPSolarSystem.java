@@ -36,7 +36,7 @@ public class HPSolarSystem {
             );
             position=new Vec3(10f,80f,1f);
         }};
-        geild = new Planet("geildon", fen, 3f, 3){{
+        geild = new Planet("geidon", fen, 3f, 3){{
                 generator = new GeidonPlanetGenerator();
                 meshLoader = () -> new HexMesh(this,4);
                 cloudMeshLoader = () -> new MultiMesh(
@@ -44,6 +44,7 @@ public class HPSolarSystem {
                         new HexSkyMesh(this, 1, 0.6f, 0.16f, 5, Color.white.cpy().lerp(Pal.spore, 0.55f).a(0.75f), 2, 0.45f, 1f, 0.41f)
                 );
                 unlocked=true;
+                alwaysUnlocked = true;
                 launchCapacityMultiplier = 0.5f;
                 sectorSeed = 2;
                 tidalLock = true;
