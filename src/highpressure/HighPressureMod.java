@@ -2,7 +2,6 @@ package highpressure;
 
 import arc.*;
 import arc.util.*;
-import highpressure.tests.PolygonTest;
 import mindustry.game.EventType.*;
 import mindustry.mod.*;
 import mindustry.ui.dialogs.*;
@@ -13,7 +12,6 @@ public class HighPressureMod extends Mod{
 
     public HighPressureMod(){
         Log.info("Loaded HighPressureMod constructor.");
-        new PolygonTest();
         //listen for game load event
         Events.on(ClientLoadEvent.class, e -> {
             //show dialog upon startup
